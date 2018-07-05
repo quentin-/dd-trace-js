@@ -2,12 +2,14 @@
 
 const platform = require('./platform')
 const Tracer = require('./opentracing/tracer')
+const ScopeManager = require('./scope/scope_manager')
 
 class DatadogTracer extends Tracer {
   constructor (config) {
     super(config)
 
     this._context = platform.context(config)
+    this._scopeManager = new ScopeManager()
   }
 
   trace (name, options, callback) {
@@ -34,6 +36,24 @@ class DatadogTracer extends Tracer {
 
       callback(span)
     })
+  }
+
+  scopeManager () {
+    return this._scopeManager
+  }
+
+  startActiveScope (name, options, finishSpanOnClose) {
+    options = Object.assign({}, options)
+    options.childOf = this._scopeManager.active()
+    options.tags = Object.assign({}, options, {
+      'service.name': this._service,
+      'resource.name': name
+    })
+
+    const span = this._startSpan(name, options)
+    const scope = this._scopeManager.activate(span, finishSpanOnClose)
+
+    return scope
   }
 
   currentSpan () {

@@ -4,6 +4,7 @@ class Context {
   constructor () {
     this._parent = null
     this._count = 0
+    this._id = Math.random()
   }
 
   retain () {
@@ -36,6 +37,7 @@ class Context {
 
   destroy () {
     if (this._count === 0) {
+      require('fs').writeSync(1, `${this._id}\n`)
       this.unlink()
     }
   }
