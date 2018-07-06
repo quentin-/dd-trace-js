@@ -51,6 +51,7 @@ class ScopeManager {
 
   _init (asyncId) {
     const context = new Context()
+    // require('fs').writeSync(1, `init: ${context._id}\n`)
 
     context.link(this._active)
     context.retain()
@@ -62,6 +63,7 @@ class ScopeManager {
     const context = this._contexts.get(asyncId)
 
     if (context) {
+      // require('fs').writeSync(1, `before: ${context._id} <- ${context.parent()}\n`)
       const execution = new ContextExecution(context)
 
       this._stack.push(this._active)
@@ -71,9 +73,11 @@ class ScopeManager {
   }
 
   _after (asyncId) {
+    const context = this._contexts.get(asyncId)
     const execution = this._executions.get(asyncId)
 
-    if (execution) {
+    if (context && execution) {
+      // require('fs').writeSync(1, `after: ${context._id}\n`)
       execution.exit()
 
       this._active = this._stack.pop()
@@ -85,6 +89,7 @@ class ScopeManager {
     const context = this._contexts.get(asyncId)
 
     if (context) {
+      // require('fs').writeSync(1, `destroy: ${context._id}\n`)
       this._contexts.delete(asyncId)
       context.release()
     }

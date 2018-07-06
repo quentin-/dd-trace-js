@@ -42,9 +42,7 @@ class ContextExecution {
     this._set.splice(index, 1)
     this._active = this._set[this._set.length - 1]
 
-    if (!this._active) {
-      this._bypass()
-    }
+    this._bypass()
   }
 
   exit () {
@@ -63,25 +61,25 @@ class ContextExecution {
   }
 
   _close () {
-    if (this._count === 0) {
-      for (let i = this._set.length - 1; i >= 0; i--) {
-        this._set[i].close()
-      }
+    for (let i = this._set.length - 1; i >= 0; i--) {
+      this._set[i].close()
     }
+
+    this._context.release()
   }
 
   _destroy () {
-    if (this._set.length === 0) {
-      this._bypass()
-    } else {
+    if (this._count === 0) {
       this._close()
+    } else {
+      this._bypass()
     }
   }
 
   _bypass () {
-    if (this._exited) {
+    if (this._exited && this._set.length === 0) {
+      // require('fs').writeSync(1, `${this._context._id} (bypass})\n`)
       this._children.forEach(child => child.relink(this._context.parent()))
-      this._context.release()
     }
   }
 }

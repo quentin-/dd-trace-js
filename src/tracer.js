@@ -44,11 +44,11 @@ class DatadogTracer extends Tracer {
 
   startActiveScope (name, options, finishSpanOnClose) {
     options = Object.assign({}, options)
-    options.childOf = this._scopeManager.active()
-    options.tags = Object.assign({}, options, {
+    options.childOf = options.childOf || this._scopeManager.active()
+    options.tags = Object.assign({}, {
       'service.name': this._service,
       'resource.name': name
-    })
+    }, options)
 
     const span = this._startSpan(name, options)
     const scope = this._scopeManager.activate(span, finishSpanOnClose)

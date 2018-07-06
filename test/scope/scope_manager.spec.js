@@ -218,6 +218,22 @@ describe('ScopeManager', () => {
     expect(scopeManager.active()).to.equal(scope1)
   })
 
+  it('should support reentering a context', () => {
+    asyncHooks.init(1)
+
+    asyncHooks.before(1)
+    asyncHooks.init(2)
+    asyncHooks.after(1)
+
+    asyncHooks.before(1)
+    asyncHooks.init(3)
+    asyncHooks.after(1)
+
+    asyncHooks.destroy(1)
+    asyncHooks.destroy(2)
+    asyncHooks.destroy(3)
+  })
+
   it('should ignore unknown contexts', () => {
     expect(() => {
       asyncHooks.destroy(1)
@@ -226,3 +242,8 @@ describe('ScopeManager', () => {
     }).not.to.throw()
   })
 })
+
+// root <- ctx95
+// root <- ctx95 <- exe95
+// root <- ctx95 <- exe95 <- ctx89
+// root <- ctx95 / root <- ctx89
