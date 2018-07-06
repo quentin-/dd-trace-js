@@ -40,9 +40,9 @@ describe('Context', () => {
     expect(parent.detach).to.have.been.calledWith(context)
   })
 
-  it('should reattach to the new parent when relinked', () => {
+  it('should attach to the new parent when relinked', () => {
     context.link(parent)
-    context.relink(ancestor)
+    context.link(ancestor)
 
     expect(parent.detach).to.have.been.calledWith(context)
     expect(ancestor.attach).to.have.been.calledWith(context)

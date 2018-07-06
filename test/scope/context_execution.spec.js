@@ -13,15 +13,13 @@ describe('ContextExecution', () => {
       retain: sinon.stub(),
       release: sinon.stub(),
       link: sinon.stub(),
-      unlink: sinon.stub(),
-      relink: sinon.stub()
+      unlink: sinon.stub()
     }
 
     children = [1, 2, 3].map(() => ({
       parent: sinon.stub(),
       link: sinon.stub(),
-      unlink: sinon.stub(),
-      relink: sinon.stub()
+      unlink: sinon.stub()
     }))
 
     scopes = [1, 2, 3].map(() => ({ close: sinon.stub() }))
@@ -35,11 +33,11 @@ describe('ContextExecution', () => {
     expect(context.retain).to.have.been.called
   })
 
-  it('should close pending scopes on exit with no children', () => {
+  it('should close pending scopes on destroy with no children', () => {
+    execution.retain()
     execution.add(scopes[0])
     execution.add(scopes[1])
-
-    execution.exit()
+    execution.release()
 
     expect(scopes[0].close).to.have.been.called
     expect(scopes[1].close).to.have.been.called
@@ -54,7 +52,7 @@ describe('ContextExecution', () => {
     expect(scopes[0].close).to.not.have.been.called
   })
 
-  it('should relink children to its parent on exit when empty', () => {
+  it('should link children to its parent on exit when empty', () => {
     const parent = {}
 
     context.parent.returns(parent)
@@ -64,11 +62,11 @@ describe('ContextExecution', () => {
 
     execution.exit()
 
-    expect(children[0].relink).to.have.been.calledWith(parent)
-    expect(children[1].relink).to.have.been.calledWith(parent)
+    expect(children[0].link).to.have.been.calledWith(parent)
+    expect(children[1].link).to.have.been.calledWith(parent)
   })
 
-  it('should not relink children to its parent on exit when not empty', () => {
+  it('should not link children to its parent on exit when not empty', () => {
     const parent = {}
 
     context.parent.returns(parent)
@@ -78,6 +76,6 @@ describe('ContextExecution', () => {
 
     execution.exit()
 
-    expect(children[0].relink).to.not.have.been.called
+    expect(children[0].link).to.not.have.been.called
   })
 })

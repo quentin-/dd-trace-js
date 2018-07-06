@@ -5,7 +5,7 @@ class ContextExecution {
     this._context = context
     this._children = new Set()
     this._active = null
-    this._count = 1
+    this._count = 0
     this._exited = false
     this._set = []
 
@@ -20,7 +20,10 @@ class ContextExecution {
 
   release () {
     this._count--
-    this._destroy()
+
+    if (this._count === 0) {
+      this._destroy()
+    }
   }
 
   parent () {
@@ -40,14 +43,13 @@ class ContextExecution {
     const index = this._set.lastIndexOf(scope)
 
     this._set.splice(index, 1)
-    this._active = this._set[this._set.length - 1]
-
-    this._bypass()
+    this._active = this._set[this._set.length - 1] || null
   }
 
   exit () {
-    this._exited = true
-    this.release()
+    if (this._context && !this._active) {
+      this._bypass()
+    }
   }
 
   attach (child) {
@@ -64,23 +66,18 @@ class ContextExecution {
     for (let i = this._set.length - 1; i >= 0; i--) {
       this._set[i].close()
     }
-
-    this._context.release()
   }
 
   _destroy () {
-    if (this._count === 0) {
-      this._close()
-    } else {
-      this._bypass()
+    this._close()
+
+    if (this._context) {
+      this._context.release()
     }
   }
 
   _bypass () {
-    if (this._exited && this._set.length === 0) {
-      // require('fs').writeSync(1, `${this._context._id} (bypass})\n`)
-      this._children.forEach(child => child.relink(this._context.parent()))
-    }
+    this._children.forEach(child => child.link(this._context.parent()))
   }
 }
 
